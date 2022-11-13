@@ -20,13 +20,13 @@ else:
 
 modelFile = 'trainedModels/lstm5sec.h5'
 #modelFile = 'trainedModels/lstm_120_4.h5'
-dataload = 'data/datiRAM3.csv'
-traindata = 'data/datiRAM3.csv'
+dataload = 'data/data_RAM_train.csv'
+traindata = 'data/data_RAM_train.csv'
 
 fj = ForecastingJob("test", "test", "lstmRAMEnhanced", "node_cpu_seconds_total", il, "dtcontrolvnf-1", outTopic=None,
                     output=None)
 #input and output features
-steps_back = 150 #130 to include two peaks
+steps_back = 130 #130 to include two peaks
 steps_forw = 1
 if load:
     # input model file to be loaded (no train)
@@ -41,7 +41,7 @@ savefile = modelFile
 features = []
 #features = ['avg_rtt_a1', 'avg_rtt_a2', 'avg_loss_a1', 'avg_loss_a2', 'r_a1', 'r_a2']
 #features = ['avg_rtt_a1', 'avg_rtt_a2', 'r_a1', 'r_a2']
-#features = ['r_a1', 'r_a2']
+features = ['r_a1', 'r_a2']
 main_feature = 'memory_free'
 
 fj.set_model(steps_back, steps_forw, load, loadfile, save, features, main_feature, savefile)

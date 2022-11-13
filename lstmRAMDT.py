@@ -43,7 +43,7 @@ class lstmramdt:
     def __init__(self, file, ratio, back, forward, accuracy, features, main_feature):
         log.debug("initaite the lstm module")
         if file is None:
-            self.train_file = "data/datiRAM2.csv"
+            self.train_file = "data/datiRAM4.csv"
         else:
             self.train_file = file
         self.dataset = None
@@ -105,7 +105,7 @@ class lstmramdt:
 
         X_train, y_train = self.split_sequences(X, y, start, end, window=self.look_backward, horizon=self.look_forward)
         print(X_train)
-        opt = Adam(learning_rate=0.0001)
+        opt = Adam(learning_rate=0.00001)
         # define model
         self.model = Sequential()
         #self.model.add(Input(shape=(X_train.shape[-2:])))
@@ -115,23 +115,24 @@ class lstmramdt:
         #self.model.add(Bidirectional(LSTM(10)))
         
         
-        #così bene o male segue
-        #self.model.add(LSTM(20,activation="tanh",input_shape=X_train.shape[-2:]))
-        #self.model.add(GRU(32,activation="tanh"))
-        #self.model.add(LSTM(32, activation='tanh'))
-        self.model.add(Conv1D(filters=164, kernel_size=21, activation='tanh', input_shape=(X_train.shape[-2:])))
         
+        #self.model.add(LSTM(64,activation="tanh",input_shape=X_train.shape[-2:]))
+        #self.model.add(Dropout(0.2))
+        #self.model.add(LSTM(32, activation='tanh'))
+        self.model.add(Conv1D(filters=64, kernel_size=21, activation='tanh', input_shape=(X_train.shape[-2:])))
+        #self.model.add(Dropout(0.2))
         #self.model.add(LSTM(10))
         #self.model.add(Dense(1))
         #self.model.add(AveragePooling1D(pool_size=2))
-        #self.model.add(Conv1D(filters=256, kernel_size=2, activation='tanh'))
+        #self.model.add(Conv1D(filters=64, kernel_size=15, activation='tanh'))
+        #self.model.add(Dropout(0.5))
         #self.model.add(AveragePooling1D(pool_size=2))
         self.model.add(Flatten())
         #self.model.add(LSTM(50, activation='relu'))#, return_sequences=True, input_shape=X_train.shape[-2:]))
         #self.model.add(LSTM(50, activation='relu'))
         #self.model.add(Dense(units=64,activation='tanh'))
         
-        self.model.add(Dense(units=64,activation='tanh'))
+        #self.model.add(Dense(units=64,activation='tanh'))
         
         #self.model.add(Dense(units=128,activation='tanh'))
         #test
@@ -151,13 +152,13 @@ class lstmramdt:
 
         #self.model.fit(X_train, y_train, epochs=400, steps_per_epoch=25, shuffle=False, verbose=1,
         #               callbacks=checkpoint)
-        self.model.fit(X_train, y_train, epochs=150, shuffle=False, verbose=1,
+        self.model.fit(X_train, y_train, epochs=1000, shuffle=False, verbose=1,
                        callbacks=checkpoint)
 
         os.listdir(checkpoint_dir)
         self.model.load_weights(checkpoint_path)
 
-        
+        '''
         train_prediction = self.model.predict(X_train)
         print(X_train[0])
         print("train prediction")
@@ -172,12 +173,14 @@ class lstmramdt:
         #print(y_train.shape)
         plt.plot(train_prediction,label='forecasting')
         plt.plot(y_train,label='t+4')
-        tmp_to_plot = pandas.read_csv('./data/datiRAM2.csv',header=0,sep=';')
+        tmp_to_plot = pandas.read_csv('./data/datiRAM4.csv',header=0,sep=';')
         tmp_to_plot = self.mmscaler_ram.transform(np.roll(tmp_to_plot['memory_free'].to_numpy(),-self.look_backward).reshape(-1,1))
 
         plt.plot(tmp_to_plot,label='t')
         plt.legend()
         plt.show()
+
+        '''
 
         if save:
             self.model.save(filename)
@@ -186,7 +189,7 @@ class lstmramdt:
 
         # VALIDATION
 
-        test_set = pandas.read_csv('./data/datiRAM3.csv',header=0,sep=';')
+        test_set = pandas.read_csv('./data/data_RAM_test.csv',header=0,sep=';')
         test_df = self.data_preparation(test_set, train=False)
         X = test_df.to_numpy()
         y = test_df[self.main_feature].to_numpy()
@@ -254,6 +257,8 @@ class lstmramdt:
         else:
             df = pandas.DataFrame(db)
 
+
+
         for feature in self.other_features:
             log.info("feature {}".format(feature))
             temp_db[feature] = df[feature].values
@@ -276,6 +281,7 @@ class lstmramdt:
             else:
                 df = pandas.DataFrame(hstack([self.mmscaler.fit_transform(temp_db.loc[:, temp_db.columns != self.main_feature]),
                                           self.mmscaler_ram.fit_transform(temp)]), columns=replica)
+
             df.plot(subplots=True)
             plt.tight_layout()
             plt.show()
