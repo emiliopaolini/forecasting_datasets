@@ -105,7 +105,7 @@ class lstmramdt:
 
         X_train, y_train = self.split_sequences(X, y, start, end, window=self.look_backward, horizon=self.look_forward)
         print(X_train)
-        opt = Adam(learning_rate=0.00001)
+        opt = Adam(learning_rate=0.001)
         # define model
         self.model = Sequential()
         #self.model.add(Input(shape=(X_train.shape[-2:])))
@@ -119,7 +119,7 @@ class lstmramdt:
         #self.model.add(LSTM(64,activation="tanh",input_shape=X_train.shape[-2:]))
         #self.model.add(Dropout(0.2))
         #self.model.add(LSTM(32, activation='tanh'))
-        self.model.add(Conv1D(filters=64, kernel_size=21, activation='tanh', input_shape=(X_train.shape[-2:])))
+        self.model.add(Conv1D(filters=64, kernel_size=21, activation='relu', input_shape=(X_train.shape[-2:])))
         #self.model.add(Dropout(0.2))
         #self.model.add(LSTM(10))
         #self.model.add(Dense(1))

@@ -26,7 +26,7 @@ traindata = 'data/data_RAM_train.csv'
 fj = ForecastingJob("test", "test", "lstmRAMEnhanced", "node_cpu_seconds_total", il, "dtcontrolvnf-1", outTopic=None,
                     output=None)
 #input and output features
-steps_back = 130 #130 to include two peaks
+steps_back = 40 #130 to include two peaks
 steps_forw = 1
 if load:
     # input model file to be loaded (no train)
