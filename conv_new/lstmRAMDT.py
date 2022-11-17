@@ -35,6 +35,7 @@ import os
 from sklearn.svm import SVR
 
 import matplotlib.pyplot as plt
+
 import logging
 
 log = logging.getLogger("Forecaster")
@@ -105,7 +106,7 @@ class lstmramdt:
 
         X_train, y_train = self.split_sequences(X, y, start, end, window=self.look_backward, horizon=self.look_forward)
         print(X_train)
-        opt = Adam(learning_rate=0.001)
+        opt = Adam(learning_rate=0.0001)
         # define model
         self.model = Sequential()
         #self.model.add(Input(shape=(X_train.shape[-2:])))
@@ -116,10 +117,10 @@ class lstmramdt:
         
         
         
-        self.model.add(LSTM(32,activation="tanh",input_shape=X_train.shape[-2:]))
+        #self.model.add(LSTM(32,activation="tanh",input_shape=X_train.shape[-2:]))
         #self.model.add(Dropout(0.2))
         #self.model.add(LSTM(32, activation='tanh'))
-        #self.model.add(Conv1D(filters=32, kernel_size=21, activation='relu', input_shape=(X_train.shape[-2:])))
+        self.model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(X_train.shape[-2:])))
         #self.model.add(Dropout(0.2))
         #self.model.add(LSTM(10))
         #self.model.add(Dense(1))
@@ -127,7 +128,7 @@ class lstmramdt:
         #self.model.add(Conv1D(filters=64, kernel_size=15, activation='tanh'))
         #self.model.add(Dropout(0.5))
         #self.model.add(AveragePooling1D(pool_size=2))
-        #self.model.add(Flatten())
+        self.model.add(Flatten())
         #self.model.add(LSTM(50, activation='relu'))#, return_sequences=True, input_shape=X_train.shape[-2:]))
         #self.model.add(LSTM(50, activation='relu'))
         #self.model.add(Dense(units=64,activation='tanh'))
@@ -152,7 +153,7 @@ class lstmramdt:
 
         #self.model.fit(X_train, y_train, epochs=400, steps_per_epoch=25, shuffle=False, verbose=1,
         #               callbacks=checkpoint)
-        self.model.fit(X_train, y_train, epochs=50, shuffle=False, verbose=1,
+        self.model.fit(X_train, y_train, epochs=1000, shuffle=False, verbose=1,
                        callbacks=checkpoint)
 
         os.listdir(checkpoint_dir)
@@ -181,7 +182,7 @@ class lstmramdt:
         plt.show()
 
         '''
-
+        print(filename)
         if save:
             self.model.save(filename)
 
@@ -189,20 +190,21 @@ class lstmramdt:
 
         # VALIDATION
 
-        test_set = pandas.read_csv('./data/data_RAM_test.csv',header=0,sep=';')
+        test_set = pandas.read_csv('./data/data_RAM_robots0.csv',header=0,sep=';')
         test_df = self.data_preparation(test_set, train=False)
         X = test_df.to_numpy()
         y = test_df[self.main_feature].to_numpy()
         
         start = 0
         end = None
-
+        
         X_test, y_test = self.split_sequences(X, y, start, end, window=self.look_backward, horizon=self.look_forward)
         test_prediction = self.model.predict(X_test)
         #prediction_pad=np.pad(train_prediction,(len(train_prediction)+4,0),'constant', constant_values=np.nan)
         #print(test_prediction.shape)
         #train_prediction = train_prediction.reshape(2416,1)
         #print(y_train.shape)
+        
         
         plt.clf()
         #print(y_train.shape)
@@ -213,8 +215,6 @@ class lstmramdt:
         plt.plot(tmp_to_plot,label='t')
         plt.legend()
         plt.show()
-
-
 
 
         return self.model
@@ -228,6 +228,7 @@ class lstmramdt:
         return self.model
 
     def predict(self, db):
+    
         log.debug("LSTM: Predicting the value enhanced")
         log.info("data {}".format(db))
         data = self.data_preparation(db)
@@ -283,8 +284,8 @@ class lstmramdt:
                                           self.mmscaler_ram.fit_transform(temp)]), columns=replica)
 
             df.plot(subplots=True)
-            plt.tight_layout()
-            plt.show()
+            #plt.tight_layout()
+            #plt.show()
             #partial scaling
             #df = pandas.DataFrame(hstack([self.mmscaler.fit_transform(temp_db.loc[:, temp_db.columns != self.main_feature]),
             #    temp]), columns=replica)
@@ -309,10 +310,11 @@ class lstmramdt:
             #            self.mmscaler_cpu.transform(temp)]), columns=replica)
             #partial scaling
             if len(self.other_features)==1:
-                df = pandas.DataFrame(hstack([self.mmscaler_ram.fit_transform(temp)]), columns=replica)
+                df = pandas.DataFrame(hstack([self.mmscaler_ram.transform(temp)]), columns=replica)
             else:
-                df = pandas.DataFrame(hstack([self.mmscaler.fit_transform(temp_db.loc[:, temp_db.columns != self.main_feature]),
-                                          self.mmscaler_ram.fit_transform(temp)]), columns=replica)
+                
+                df = pandas.DataFrame(hstack([self.mmscaler.transform(temp_db.loc[:, temp_db.columns != self.main_feature]),
+                                          self.mmscaler_ram.transform(temp)]), columns=replica)
             # no scaling
             #df = pandas.DataFrame(
                 #hstack([temp_db.loc[:, temp_db.columns != self.main_feature],temp]), columns=replica)
