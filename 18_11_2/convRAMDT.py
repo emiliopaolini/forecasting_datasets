@@ -220,19 +220,19 @@ class lstmramdt:
         return self.model
 
     def load_trained_model(self, filename):
-        log.info("LSTM: Loading the lstm model from file {}".format(filename))
+        log.info("Conv: Loading the lstm model from file {}".format(filename))
         self.model = load_model(filename)
         if "memory_free" in self.main_feature:
-            self.mmscaler = joblib.load("trainedModels/lstm_mmscaler")
-            self.mmscaler_ram = joblib.load("trainedModels/lstm_mmscaler_ram")
+            self.mmscaler = joblib.load("trainedModels/conv_mmscaler_130")
+            self.mmscaler_ram = joblib.load("trainedModels/conv_mmscaler_ram_130")
         return self.model
 
     def predict(self, db):
     
         log.debug("LSTM: Predicting the value enhanced")
-        log.info("data {}".format(db))
+        log.debug("data {}".format(db))
         data = self.data_preparation(db)
-        log.info("data after the preparation {}".format(data))
+        log.debug("data after the preparation {}".format(data))
 
         num = self.n_features + 1
         if data is not None:
@@ -261,7 +261,7 @@ class lstmramdt:
 
 
         for feature in self.other_features:
-            log.info("feature {}".format(feature))
+            log.debug("feature {}".format(feature))
             temp_db[feature] = df[feature].values
         #temp_db[self.main_feature] = df[self.main_feature].values - df[self.main_feature].values[0]
         temp_db[self.main_feature] = df[self.main_feature].values
@@ -304,8 +304,8 @@ class lstmramdt:
             #            temp]), columns=replica)
 
             # save scaler for future use
-            joblib.dump(self.mmscaler, "trainedModels/lstm_mmscaler")
-            joblib.dump(self.mmscaler_ram, "trainedModels/lstm_mmscaler_ram")
+            joblib.dump(self.mmscaler, "trainedModels/conv_mmscaler_130")
+            joblib.dump(self.mmscaler_ram, "trainedModels/conv_mmscaler_ram_130")
 
         else:
             temp = pandas.DataFrame()
